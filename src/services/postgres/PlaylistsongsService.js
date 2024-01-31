@@ -51,7 +51,7 @@ class PlaylistsongsService {
     };
     const result = await this._pool.query(query);
     if (!result.rowCount) {
-      throw new NotFoundError("Playlist tidak ditemukan");
+      throw new NotFoundError("gudu tidak ditemukan");
     }
 
     const playlistSongs = {

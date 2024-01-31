@@ -55,13 +55,12 @@ class PlaylistsService {
     };
     const result = await this._pool.query(query);
     if (!result.rows.length) {
-      throw new NotFoundError("Playlist tidak ditemukan");
+      throw new NotFoundError("Bapa tidak ditemukan");
     }
     const playlist = result.rows[0];
     if (playlist.owner !== owner) {
       throw new AuthorizationError("Anda tidak berhak mengakses resource ini");
     }
   }
-
 }
 module.exports = PlaylistsService;

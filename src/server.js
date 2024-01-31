@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const Hapi = require("@hapi/hapi");
 const Jwt = require("@hapi/jwt");
+const path = require("path");
 const ClientError = require("./exception/ClientError");
 
 // albums
@@ -32,6 +33,14 @@ const PlaylistsService = require("./services/postgres/PlaylistsService");
 const playlistsongs = require("./api/playlistsongs");
 const PlaylistsongService = require("./services/postgres/PlaylistsongsService");
 const PlaylistsongValidator = require("./validator/playlistsongs");
+// Exports
+const _exports = require("./api/exports");
+const ProducerService = require("./services/rabbitmq/ProducerService");
+const ExportsValidator = require("./validator/exports");
+// uploads
+const uploads = require("./api/uploads");
+const StorageService = require("./services/storage/StorageService");
+const UploadsValidator = require("./validator/uploads");
 
 const init = async () => {
   const albumsService = new AlbumsService();
@@ -40,6 +49,10 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService();
   const playlistsService = new PlaylistsService();
   const playlistsongService = new PlaylistsongService();
+  const storageService = new StorageService(
+    path.resolve(__dirname, "api/uploads/file/images")
+  );
+
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -49,7 +62,6 @@ const init = async () => {
       },
     },
   });
-  // server.route(routes);
 
   // registrasi plugin eksternal
   await server.register([
@@ -118,6 +130,23 @@ const init = async () => {
         playlistsongService: playlistsongService,
         playlistService: playlistsService,
         validator: PlaylistsongValidator,
+      },
+    },
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        playlistsongService: playlistsongService,
+        playlistService: playlistsService,
+        validator: ExportsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        service: storageService,
+        albumService: albumsService,
+        validator: UploadsValidator,
       },
     },
   ]);

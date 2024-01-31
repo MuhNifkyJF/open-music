@@ -17,7 +17,7 @@ class AlbumsService {
     const result = await this._pool.query(query);
 
     if (!result.rows[0].id) {
-      throw new InvariantError("Catatan gagal ditambahkan");
+      throw new InvariantError("Album gagal ditambahkan");
     }
 
     return result.rows[0].id;
@@ -35,10 +35,15 @@ class AlbumsService {
     };
     const result = await this._pool.query(query);
     if (!result.rows.length) {
-      throw new NotFoundError("Catatan tidak ditemukan");
+      throw new NotFoundError("Album tidak ditemukan");
     }
-
-    return result.rows[0];
+    const album = result.rows[0];
+    return {
+      id: album.id,
+      name: album.name,
+      year: album.year,
+      coverUrl: album.cover,
+    };
   }
 
   async editAlbumById(id, { name, year }) {
@@ -64,6 +69,14 @@ class AlbumsService {
     if (!result.rows.length) {
       throw new NotFoundError("Album gagal dihapus. Id tidak ditemukan");
     }
+  }
+
+  async addAlbumCover(cover, id) {
+    const query = {
+      text: "UPDATE albums SET cover = $1 WHERE id = $2 RETURNING id",
+      values: [cover, id],
+    };
+    await this._pool.query(query);
   }
 }
 module.exports = AlbumsService;
