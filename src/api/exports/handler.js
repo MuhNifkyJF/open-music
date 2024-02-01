@@ -23,12 +23,7 @@ class ExportsHandler {
       playlist,
       targetEmail,
     };
-    // const message = {
-    //   userId: owner,
-    //   playlistId,
-    //   targetEmail,
-    //   playlist,
-    // };
+
     await this._service.sendMessage(
       "export:playlists",
       JSON.stringify(message)

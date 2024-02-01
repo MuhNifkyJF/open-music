@@ -1,6 +1,4 @@
-/* eslint-disable camelcase */
 
-exports.shorthands = undefined;
 exports.up = (pgm) => {
   // menghindari duplikasi data dengan memberi nilai unique antara kedua field
   pgm.addConstraint(

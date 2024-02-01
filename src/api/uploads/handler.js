@@ -1,4 +1,3 @@
-// const { default: mod } = require("@hapi/jwt");
 
 class UploadsHandler {
   constructor(service, albumService, validator) {

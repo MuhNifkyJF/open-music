@@ -1,23 +1,22 @@
 
 
 exports.up = (pgm) => {
-  pgm.createTable("playlistsongs", {
+  pgm.createTable("albumlikes", {
     id: {
       type: "VARCHAR(50)",
       primaryKey: true,
     },
-    playlist_id: {
+    user_id: {
       type: "VARCHAR(50)",
       notNull: true,
     },
-    song_id: {
+    album_id: {
       type: "VARCHAR(50)",
       notNull: true,
     },
   });
-
 };
 
 exports.down = (pgm) => {
-  pgm.droTable("playlistsongs");
+  pgm.dropTable(albumlikes);
 };
