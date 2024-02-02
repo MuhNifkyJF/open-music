@@ -1,11 +1,11 @@
+const autoBind = require("auto-bind");
+
 class AlbumlikesHandler {
   constructor(service, albumsService) {
     this._service = service;
     this._albumsService = albumsService;
 
-    this.postAlbumlikesHandler = this.postAlbumlikesHandler.bind(this);
-    this.deleteAlbumlikesHandler = this.deleteAlbumlikesHandler.bind(this);
-    this.getAlbumlikesHandler = this.getAlbumlikesHandler.bind(this);
+    autoBind(this);
   }
 
   async postAlbumlikesHandler(request, h) {

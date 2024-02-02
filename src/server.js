@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const Hapi = require("@hapi/hapi");
 const Jwt = require("@hapi/jwt");
-const Inert = require("@hapi/inert");
+const Inert = require('@hapi/inert');
 const path = require("path");
 const ClientError = require("./exception/ClientError");
 
@@ -46,16 +46,17 @@ const AlbumlikesService = require("./services/postgres/AlbumlikesService");
 const CacheService = require("./services/redis/CacheService");
 
 const init = async () => {
-  const albumsService = new AlbumsService();
-  const songsService = new SongsService();
-  const usersService = new UsersService();
-  const authenticationsService = new AuthenticationsService();
-  const playlistsService = new PlaylistsService();
-  const playlistsongService = new PlaylistsongService();
   const storageService = new StorageService(
     path.resolve(__dirname, "api/uploads/file/images")
   );
   const cacheService = new CacheService();
+  const albumsService = new AlbumsService();
+  const songsService = new SongsService();
+  const usersService = new UsersService();
+  const authenticationsService = new AuthenticationsService();
+  const playlistsService = new PlaylistsService(cacheService);
+  const playlistsongService = new PlaylistsongService();
+  
   const albumlikesService = new AlbumlikesService(cacheService);
 
   const server = Hapi.server({

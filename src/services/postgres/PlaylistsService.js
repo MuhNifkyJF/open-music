@@ -4,8 +4,9 @@ const InvariantError = require("../../exception/InvariantError");
 const NotFoundError = require("../../exception/NotFoundError");
 const AuthorizationError = require("../../exception/AuthorizationError");
 class PlaylistsService {
-  constructor() {
+  constructor(cacheservice) {
     this._pool = new Pool();
+    this.cacheService = cacheservice;
   }
 
   async addPlaylist({ name, owner }) {
@@ -21,20 +22,32 @@ class PlaylistsService {
     if (!result.rows[0].id) {
       throw new InvariantError("Playlist gagal ditambahkan");
     }
-
+    await this.cacheService.delete(`playlist:${owner}`);
     return result.rows[0].id;
   }
   async getPlaylists(owner) {
-    const query = {
-      text: `SELECT playlists.id, playlists.name, users.username FROM playlists
-      LEFT JOIN users ON users.id = playlists.owner
-      WHERE playlists.owner = $1 GROUP BY playlists.id, users.username`,
-      values: [owner],
-    };
+    try {
+      const result = await this.cacheService.get(`playlist:${owner}`);
+      return { likes: JSON.parse(result), source: "cache" };
+    } catch (error) {
+      const query = {
+        text: `SELECT playlists.id, playlists.name, users.username FROM playlists
+        LEFT JOIN users ON users.id = playlists.owner
+        WHERE playlists.owner = $1 GROUP BY playlists.id, users.username`,
+        values: [owner],
+      };
 
-    const result = await this._pool.query(query);
+      const result = await this._pool.query(query);
+      await this.cacheService.set(
+        `playlist:${owner}`,
+        JSON.stringify(result.rows)
+      );
 
-    return result.rows;
+      return {
+        playlist: result.rows,
+        source: "database",
+      };
+    }
   }
   async deletePlaylistById(id) {
     const query = {
@@ -44,9 +57,13 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Playlist gagal dihapus, Id tidak ditemukan");
     }
+    await this.cacheService.delete(
+      `playlist:${id}`,
+      JSON.stringify(result.rowCount)
+    );
   }
   async verifyPlaylistOwner(id, owner) {
     const query = {
@@ -54,7 +71,7 @@ class PlaylistsService {
       values: [id],
     };
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Bapa tidak ditemukan");
     }
     const playlist = result.rows[0];
